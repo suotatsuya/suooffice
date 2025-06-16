@@ -1,0 +1,1223 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Suo Office 2025 - Premium Office Suite</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+        
+        body {
+            font-family: 'Poppins', sans-serif;
+            overflow-x: hidden;
+        }
+        
+        .editor-area {
+            min-height: calc(100vh - 180px);
+        }
+        
+        .tooltip {
+            position: relative;
+            display: inline-block;
+        }
+        
+        .tooltip .tooltiptext {
+            visibility: hidden;
+            width: 120px;
+            background-color: #333;
+            color: #fff;
+            text-align: center;
+            border-radius: 6px;
+            padding: 5px;
+            position: absolute;
+            z-index: 1;
+            bottom: 125%;
+            left: 50%;
+            margin-left: -60px;
+            opacity: 0;
+            transition: opacity 0.3s;
+            font-size: 12px;
+        }
+        
+        .tooltip:hover .tooltiptext {
+            visibility: visible;
+            opacity: 1;
+        }
+        
+        #spreadsheet {
+            border-collapse: collapse;
+            width: 100%;
+        }
+        
+        #spreadsheet td, #spreadsheet th {
+            border: 1px solid #ddd;
+            padding: 8px;
+            min-width: 100px;
+            height: 30px;
+        }
+        
+        #spreadsheet th {
+            background-color: #f2f2f2;
+            text-align: center;
+            font-weight: bold;
+        }
+        
+        .active-cell {
+            background-color: #e6f3ff !important;
+            outline: 2px solid #4a90e2;
+        }
+        
+        .slide {
+            width: 80%;
+            height: 400px;
+            margin: 20px auto;
+            background-color: white;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .slide-content {
+            padding: 40px;
+            height: 100%;
+        }
+        
+        .transition-all {
+            transition: all 0.3s ease;
+        }
+        
+        @media (max-width: 768px) {
+            .slide {
+                width: 95%;
+                height: 300px;
+            }
+            
+            .toolbar {
+                flex-wrap: wrap;
+                height: auto !important;
+                padding: 5px 0;
+            }
+            
+            .toolbar-group {
+                margin-bottom: 5px;
+            }
+        }
+    </style>
+</head>
+<body class="bg-gray-100">
+    <!-- Header -->
+    <header class="bg-blue-700 text-white shadow-lg">
+        <div class="container mx-auto px-4 py-3 flex justify-between items-center">
+            <div class="flex items-center space-x-2">
+                <i class="fas fa-file-alt text-2xl"></i>
+                <h1 class="text-2xl font-bold">Suo Office 2025</h1>
+            </div>
+            <div class="flex items-center space-x-4">
+                <button id="save-btn" class="bg-blue-600 hover:bg-blue-800 px-4 py-2 rounded transition-all">
+                    <i class="fas fa-save mr-2"></i>Save
+                </button>
+                <div class="relative">
+                    <button id="user-btn" class="flex items-center space-x-2 focus:outline-none">
+                        <span class="font-medium">User</span>
+                        <i class="fas fa-user-circle text-xl"></i>
+                    </button>
+                    <div id="user-dropdown" class="hidden absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg z-10">
+                        <div class="py-1">
+                            <a href="#" class="block px-4 py-2 text-gray-800 hover:bg-gray-100">Profile</a>
+                            <a href="#" class="block px-4 py-2 text-gray-800 hover:bg-gray-100">Settings</a>
+                            <a href="#" class="block px-4 py-2 text-gray-800 hover:bg-gray-100">Sign out</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- App Selection -->
+    <div class="bg-gray-200 py-2 px-4 shadow-sm">
+        <div class="container mx-auto flex space-x-4">
+            <button id="word-btn" class="app-selector bg-white text-blue-700 px-4 py-2 rounded-lg shadow-md font-medium flex items-center space-x-2">
+                <i class="fas fa-file-word text-blue-600"></i>
+                <span>Word</span>
+            </button>
+            <button id="excel-btn" class="app-selector bg-white text-green-700 px-4 py-2 rounded-lg shadow-md font-medium flex items-center space-x-2">
+                <i class="fas fa-file-excel text-green-600"></i>
+                <span>Excel</span>
+            </button>
+            <button id="powerpoint-btn" class="app-selector bg-white text-red-700 px-4 py-2 rounded-lg shadow-md font-medium flex items-center space-x-2">
+                <i class="fas fa-file-powerpoint text-red-600"></i>
+                <span>PowerPoint</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- Document Name -->
+    <div class="bg-white py-2 px-4 shadow-sm">
+        <div class="container mx-auto flex items-center">
+            <input type="text" id="doc-name" value="Untitled Document" class="text-xl font-semibold border-none focus:outline-none focus:ring-2 focus:ring-blue-500 rounded px-2 py-1 w-full max-w-md">
+        </div>
+    </div>
+
+    <!-- Toolbar -->
+    <div class="bg-white shadow-md">
+        <div class="container mx-auto px-4">
+            <!-- Word Toolbar -->
+            <div id="word-toolbar" class="toolbar flex items-center space-x-4 py-2 overflow-x-auto">
+                <div class="toolbar-group flex items-center space-x-1 border-r pr-4">
+                    <button class="toolbar-btn hover:bg-gray-100 p-2 rounded">
+                        <i class="fas fa-undo"></i>
+                    </button>
+                    <button class="toolbar-btn hover:bg-gray-100 p-2 rounded">
+                        <i class="fas fa-redo"></i>
+                    </button>
+                </div>
+                
+                <div class="toolbar-group flex items-center space-x-1 border-r pr-4">
+                    <div class="relative">
+                        <select id="font-family" class="border rounded px-2 py-1 text-sm focus:outline-none">
+                            <option value="Arial">Arial</option>
+                            <option value="Times New Roman">Times New Roman</option>
+                            <option value="Courier New">Courier New</option>
+                            <option value="Verdana">Verdana</option>
+                            <option value="Graffiti">Graffiti</option>
+                            <option value="Comic Sans MS">Comic Sans MS</option>
+                            <option value="Impact">Impact</option>
+                            <option value="Georgia">Georgia</option>
+                        </select>
+                    </div>
+                    
+                    <div class="relative">
+                        <select id="font-size" class="border rounded px-2 py-1 text-sm focus:outline-none">
+                            <option value="8">8</option>
+                            <option value="9">9</option>
+                            <option value="10">10</option>
+                            <option value="11">11</option>
+                            <option value="12">12</option>
+                            <option value="14" selected>14</option>
+                            <option value="16">16</option>
+                            <option value="18">18</option>
+                            <option value="20">20</option>
+                            <option value="22">22</option>
+                            <option value="24">24</option>
+                            <option value="26">26</option>
+                            <option value="28">28</option>
+                            <option value="36">36</option>
+                            <option value="48">48</option>
+                            <option value="72">72</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="toolbar-group flex items-center space-x-1 border-r pr-4">
+                    <button class="toolbar-btn hover:bg-gray-100 p-2 rounded" data-command="bold">
+                        <i class="fas fa-bold"></i>
+                    </button>
+                    <button class="toolbar-btn hover:bg-gray-100 p-2 rounded" data-command="italic">
+                        <i class="fas fa-italic"></i>
+                    </button>
+                    <button class="toolbar-btn hover:bg-gray-100 p-2 rounded" data-command="underline">
+                        <i class="fas fa-underline"></i>
+                    </button>
+                    <button class="toolbar-btn hover:bg-gray-100 p-2 rounded" data-command="strikeThrough">
+                        <i class="fas fa-strikethrough"></i>
+                    </button>
+                </div>
+                
+                <div class="toolbar-group flex items-center space-x-1 border-r pr-4">
+                    <button class="toolbar-btn hover:bg-gray-100 p-2 rounded" data-command="justifyLeft">
+                        <i class="fas fa-align-left"></i>
+                    </button>
+                    <button class="toolbar-btn hover:bg-gray-100 p-2 rounded" data-command="justifyCenter">
+                        <i class="fas fa-align-center"></i>
+                    </button>
+                    <button class="toolbar-btn hover:bg-gray-100 p-2 rounded" data-command="justifyRight">
+                        <i class="fas fa-align-right"></i>
+                    </button>
+                    <button class="toolbar-btn hover:bg-gray-100 p-2 rounded" data-command="justifyFull">
+                        <i class="fas fa-align-justify"></i>
+                    </button>
+                </div>
+                
+                <div class="toolbar-group flex items-center space-x-1 border-r pr-4">
+                    <div class="relative">
+                        <button class="toolbar-btn hover:bg-gray-100 p-2 rounded" id="text-color-btn">
+                            <i class="fas fa-font"></i>
+                            <i class="fas fa-caret-down ml-1 text-xs"></i>
+                        </button>
+                        <div id="text-color-picker" class="hidden absolute z-10 mt-1 bg-white shadow-lg rounded p-2">
+                            <div class="grid grid-cols-8 gap-1">
+                                <div class="w-6 h-6 bg-black rounded cursor-pointer" data-color="#000000"></div>
+                                <div class="w-6 h-6 bg-red-500 rounded cursor-pointer" data-color="#FF0000"></div>
+                                <div class="w-6 h-6 bg-green-500 rounded cursor-pointer" data-color="#00FF00"></div>
+                                <div class="w-6 h-6 bg-blue-500 rounded cursor-pointer" data-color="#0000FF"></div>
+                                <div class="w-6 h-6 bg-yellow-500 rounded cursor-pointer" data-color="#FFFF00"></div>
+                                <div class="w-6 h-6 bg-purple-500 rounded cursor-pointer" data-color="#800080"></div>
+                                <div class="w-6 h-6 bg-pink-500 rounded cursor-pointer" data-color="#FFC0CB"></div>
+                                <div class="w-6 h-6 bg-gray-500 rounded cursor-pointer" data-color="#808080"></div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="relative">
+                        <button class="toolbar-btn hover:bg-gray-100 p-2 rounded" id="highlight-color-btn">
+                            <i class="fas fa-highlighter"></i>
+                            <i class="fas fa-caret-down ml-1 text-xs"></i>
+                        </button>
+                        <div id="highlight-color-picker" class="hidden absolute z-10 mt-1 bg-white shadow-lg rounded p-2">
+                            <div class="grid grid-cols-8 gap-1">
+                                <div class="w-6 h-6 bg-yellow-200 rounded cursor-pointer" data-color="#FFFF00"></div>
+                                <div class="w-6 h-6 bg-green-200 rounded cursor-pointer" data-color="#00FF00"></div>
+                                <div class="w-6 h-6 bg-blue-200 rounded cursor-pointer" data-color="#0000FF"></div>
+                                <div class="w-6 h-6 bg-red-200 rounded cursor-pointer" data-color="#FF0000"></div>
+                                <div class="w-6 h-6 bg-purple-200 rounded cursor-pointer" data-color="#800080"></div>
+                                <div class="w-6 h-6 bg-pink-200 rounded cursor-pointer" data-color="#FFC0CB"></div>
+                                <div class="w-6 h-6 bg-gray-200 rounded cursor-pointer" data-color="#808080"></div>
+                                <div class="w-6 h-6 bg-white border rounded cursor-pointer" data-color="#FFFFFF"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="toolbar-group flex items-center space-x-1">
+                    <button class="toolbar-btn hover:bg-gray-100 p-2 rounded" data-command="insertUnorderedList">
+                        <i class="fas fa-list-ul"></i>
+                    </button>
+                    <button class="toolbar-btn hover:bg-gray-100 p-2 rounded" data-command="insertOrderedList">
+                        <i class="fas fa-list-ol"></i>
+                    </button>
+                    <button class="toolbar-btn hover:bg-gray-100 p-2 rounded" data-command="createLink">
+                        <i class="fas fa-link"></i>
+                    </button>
+                    <button class="toolbar-btn hover:bg-gray-100 p-2 rounded" data-command="insertImage">
+                        <i class="fas fa-image"></i>
+                    </button>
+                    <button class="toolbar-btn hover:bg-gray-100 p-2 rounded" data-command="insertTable">
+                        <i class="fas fa-table"></i>
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Excel Toolbar -->
+            <div id="excel-toolbar" class="toolbar hidden flex items-center space-x-4 py-2 overflow-x-auto">
+                <div class="toolbar-group flex items-center space-x-1 border-r pr-4">
+                    <button class="toolbar-btn hover:bg-gray-100 p-2 rounded">
+                        <i class="fas fa-undo"></i>
+                    </button>
+                    <button class="toolbar-btn hover:bg-gray-100 p-2 rounded">
+                        <i class="fas fa-redo"></i>
+                    </button>
+                </div>
+                
+                <div class="toolbar-group flex items-center space-x-1 border-r pr-4">
+                    <div class="relative">
+                        <select id="excel-font-family" class="border rounded px-2 py-1 text-sm focus:outline-none">
+                            <option value="Arial">Arial</option>
+                            <option value="Times New Roman">Times New Roman</option>
+                            <option value="Courier New">Courier New</option>
+                            <option value="Verdana">Verdana</option>
+                            <option value="Graffiti">Graffiti</option>
+                        </select>
+                    </div>
+                    
+                    <div class="relative">
+                        <select id="excel-font-size" class="border rounded px-2 py-1 text-sm focus:outline-none">
+                            <option value="8">8</option>
+                            <option value="9">9</option>
+                            <option value="10">10</option>
+                            <option value="11">11</option>
+                            <option value="12" selected>12</option>
+                            <option value="14">14</option>
+                            <option value="16">16</option>
+                            <option value="18">18</option>
+                            <option value="20">20</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="toolbar-group flex items-center space-x-1 border-r pr-4">
+                    <button class="toolbar-btn hover:bg-gray-100 p-2 rounded" id="excel-bold-btn">
+                        <i class="fas fa-bold"></i>
+                    </button>
+                    <button class="toolbar-btn hover:bg-gray-100 p-2 rounded" id="excel-italic-btn">
+                        <i class="fas fa-italic"></i>
+                    </button>
+                    <button class="toolbar-btn hover:bg-gray-100 p-2 rounded" id="excel-underline-btn">
+                        <i class="fas fa-underline"></i>
+                    </button>
+                </div>
+                
+                <div class="toolbar-group flex items-center space-x-1 border-r pr-4">
+                    <button class="toolbar-btn hover:bg-gray-100 p-2 rounded" id="excel-align-left-btn">
+                        <i class="fas fa-align-left"></i>
+                    </button>
+                    <button class="toolbar-btn hover:bg-gray-100 p-2 rounded" id="excel-align-center-btn">
+                        <i class="fas fa-align-center"></i>
+                    </button>
+                    <button class="toolbar-btn hover:bg-gray-100 p-2 rounded" id="excel-align-right-btn">
+                        <i class="fas fa-align-right"></i>
+                    </button>
+                </div>
+                
+                <div class="toolbar-group flex items-center space-x-1 border-r pr-4">
+                    <div class="relative">
+                        <button class="toolbar-btn hover:bg-gray-100 p-2 rounded" id="excel-text-color-btn">
+                            <i class="fas fa-font"></i>
+                            <i class="fas fa-caret-down ml-1 text-xs"></i>
+                        </button>
+                        <div id="excel-text-color-picker" class="hidden absolute z-10 mt-1 bg-white shadow-lg rounded p-2">
+                            <div class="grid grid-cols-8 gap-1">
+                                <div class="w-6 h-6 bg-black rounded cursor-pointer" data-color="#000000"></div>
+                                <div class="w-6 h-6 bg-red-500 rounded cursor-pointer" data-color="#FF0000"></div>
+                                <div class="w-6 h-6 bg-green-500 rounded cursor-pointer" data-color="#00FF00"></div>
+                                <div class="w-6 h-6 bg-blue-500 rounded cursor-pointer" data-color="#0000FF"></div>
+                                <div class="w-6 h-6 bg-yellow-500 rounded cursor-pointer" data-color="#FFFF00"></div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="relative">
+                        <button class="toolbar-btn hover:bg-gray-100 p-2 rounded" id="excel-fill-color-btn">
+                            <i class="fas fa-fill-drip"></i>
+                            <i class="fas fa-caret-down ml-1 text-xs"></i>
+                        </button>
+                        <div id="excel-fill-color-picker" class="hidden absolute z-10 mt-1 bg-white shadow-lg rounded p-2">
+                            <div class="grid grid-cols-8 gap-1">
+                                <div class="w-6 h-6 bg-yellow-200 rounded cursor-pointer" data-color="#FFFF00"></div>
+                                <div class="w-6 h-6 bg-green-200 rounded cursor-pointer" data-color="#00FF00"></div>
+                                <div class="w-6 h-6 bg-blue-200 rounded cursor-pointer" data-color="#0000FF"></div>
+                                <div class="w-6 h-6 bg-red-200 rounded cursor-pointer" data-color="#FF0000"></div>
+                                <div class="w-6 h-6 bg-white border rounded cursor-pointer" data-color="#FFFFFF"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="toolbar-group flex items-center space-x-1">
+                    <button class="toolbar-btn hover:bg-gray-100 p-2 rounded" id="excel-format-numbers-btn">
+                        <span class="text-sm font-medium">123</span>
+                        <i class="fas fa-caret-down ml-1 text-xs"></i>
+                    </button>
+                    <button class="toolbar-btn hover:bg-gray-100 p-2 rounded" id="excel-insert-function-btn">
+                        <i class="fas fa-function"></i>
+                    </button>
+                    <button class="toolbar-btn hover:bg-gray-100 p-2 rounded" id="excel-chart-btn">
+                        <i class="fas fa-chart-bar"></i>
+                    </button>
+                </div>
+            </div>
+            
+            <!-- PowerPoint Toolbar -->
+            <div id="powerpoint-toolbar" class="toolbar hidden flex items-center space-x-4 py-2 overflow-x-auto">
+                <div class="toolbar-group flex items-center space-x-1 border-r pr-4">
+                    <button class="toolbar-btn hover:bg-gray-100 p-2 rounded">
+                        <i class="fas fa-undo"></i>
+                    </button>
+                    <button class="toolbar-btn hover:bg-gray-100 p-2 rounded">
+                        <i class="fas fa-redo"></i>
+                    </button>
+                </div>
+                
+                <div class="toolbar-group flex items-center space-x-1 border-r pr-4">
+                    <div class="relative">
+                        <select id="ppt-font-family" class="border rounded px-2 py-1 text-sm focus:outline-none">
+                            <option value="Arial">Arial</option>
+                            <option value="Times New Roman">Times New Roman</option>
+                            <option value="Courier New">Courier New</option>
+                            <option value="Verdana">Verdana</option>
+                            <option value="Graffiti">Graffiti</option>
+                        </select>
+                    </div>
+                    
+                    <div class="relative">
+                        <select id="ppt-font-size" class="border rounded px-2 py-1 text-sm focus:outline-none">
+                            <option value="12">12</option>
+                            <option value="14">14</option>
+                            <option value="16">16</option>
+                            <option value="18" selected>18</option>
+                            <option value="20">20</option>
+                            <option value="24">24</option>
+                            <option value="28">28</option>
+                            <option value="32">32</option>
+                            <option value="36">36</option>
+                            <option value="48">48</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="toolbar-group flex items-center space-x-1 border-r pr-4">
+                    <button class="toolbar-btn hover:bg-gray-100 p-2 rounded" id="ppt-bold-btn">
+                        <i class="fas fa-bold"></i>
+                    </button>
+                    <button class="toolbar-btn hover:bg-gray-100 p-2 rounded" id="ppt-italic-btn">
+                        <i class="fas fa-italic"></i>
+                    </button>
+                    <button class="toolbar-btn hover:bg-gray-100 p-2 rounded" id="ppt-underline-btn">
+                        <i class="fas fa-underline"></i>
+                    </button>
+                </div>
+                
+                <div class="toolbar-group flex items-center space-x-1 border-r pr-4">
+                    <div class="relative">
+                        <button class="toolbar-btn hover:bg-gray-100 p-2 rounded" id="ppt-text-color-btn">
+                            <i class="fas fa-font"></i>
+                            <i class="fas fa-caret-down ml-1 text-xs"></i>
+                        </button>
+                        <div id="ppt-text-color-picker" class="hidden absolute z-10 mt-1 bg-white shadow-lg rounded p-2">
+                            <div class="grid grid-cols-8 gap-1">
+                                <div class="w-6 h-6 bg-black rounded cursor-pointer" data-color="#000000"></div>
+                                <div class="w-6 h-6 bg-red-500 rounded cursor-pointer" data-color="#FF0000"></div>
+                                <div class="w-6 h-6 bg-green-500 rounded cursor-pointer" data-color="#00FF00"></div>
+                                <div class="w-6 h-6 bg-blue-500 rounded cursor-pointer" data-color="#0000FF"></div>
+                                <div class="w-6 h-6 bg-yellow-500 rounded cursor-pointer" data-color="#FFFF00"></div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="relative">
+                        <button class="toolbar-btn hover:bg-gray-100 p-2 rounded" id="ppt-fill-color-btn">
+                            <i class="fas fa-fill-drip"></i>
+                            <i class="fas fa-caret-down ml-1 text-xs"></i>
+                        </button>
+                        <div id="ppt-fill-color-picker" class="hidden absolute z-10 mt-1 bg-white shadow-lg rounded p-2">
+                            <div class="grid grid-cols-8 gap-1">
+                                <div class="w-6 h-6 bg-yellow-200 rounded cursor-pointer" data-color="#FFFF00"></div>
+                                <div class="w-6 h-6 bg-green-200 rounded cursor-pointer" data-color="#00FF00"></div>
+                                <div class="w-6 h-6 bg-blue-200 rounded cursor-pointer" data-color="#0000FF"></div>
+                                <div class="w-6 h-6 bg-red-200 rounded cursor-pointer" data-color="#FF0000"></div>
+                                <div class="w-6 h-6 bg-white border rounded cursor-pointer" data-color="#FFFFFF"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="toolbar-group flex items-center space-x-1">
+                    <button class="toolbar-btn hover:bg-gray-100 p-2 rounded" id="ppt-new-slide-btn">
+                        <i class="fas fa-plus"></i>
+                        <span class="ml-1 text-sm">New Slide</span>
+                    </button>
+                    <button class="toolbar-btn hover:bg-gray-100 p-2 rounded" id="ppt-transition-btn">
+                        <i class="fas fa-sliders-h"></i>
+                        <span class="ml-1 text-sm">Transitions</span>
+                    </button>
+                    <button class="toolbar-btn hover:bg-gray-100 p-2 rounded" id="ppt-animation-btn">
+                        <i class="fas fa-magic"></i>
+                        <span class="ml-1 text-sm">Animations</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <main class="container mx-auto px-4 py-6">
+        <!-- Word Editor -->
+        <div id="word-editor" class="editor-area bg-white shadow-lg rounded-lg p-6">
+            <div id="word-content" class="min-h-[500px] p-4 border border-gray-300 rounded focus:outline-none" contenteditable="true">
+                <h1 style="font-size: 24px; font-family: 'Times New Roman'; text-align: center;">Welcome to Suo Office 2025</h1>
+                <p style="font-size: 14px; font-family: Arial; text-align: justify;">
+                    This is a powerful online office suite that allows you to create, edit, and share documents, spreadsheets, and presentations. Start typing here to begin your document. Use the toolbar above to format your text, insert images, tables, and more.
+                </p>
+                <p style="font-size: 14px; font-family: Arial; text-align: justify; margin-top: 12px;">
+                    Suo Office 2025 offers a complete set of features similar to traditional office software but accessible from any device with an internet connection. Your documents are automatically saved to the cloud, so you never have to worry about losing your work.
+                </p>
+            </div>
+        </div>
+        
+        <!-- Excel Editor -->
+        <div id="excel-editor" class="editor-area hidden bg-white shadow-lg rounded-lg p-6">
+            <div class="flex justify-between items-center mb-4">
+                <div class="flex space-x-2">
+                    <input type="text" id="cell-reference" value="A1" class="border rounded px-2 py-1 w-16 text-center" readonly>
+                    <input type="text" id="cell-formula" placeholder="Formula" class="border rounded px-2 py-1 w-64">
+                </div>
+                <div>
+                    <span id="excel-status" class="text-sm text-gray-600">Ready</span>
+                </div>
+            </div>
+            <div class="overflow-x-auto">
+                <table id="spreadsheet">
+                    <thead>
+                        <tr>
+                            <th></th>
+                            <th>A</th>
+                            <th>B</th>
+                            <th>C</th>
+                            <th>D</th>
+                            <th>E</th>
+                            <th>F</th>
+                            <th>G</th>
+                            <th>H</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <th>1</th>
+                            <td contenteditable="true"></td>
+                            <td contenteditable="true"></td>
+                            <td contenteditable="true"></td>
+                            <td contenteditable="true"></td>
+                            <td contenteditable="true"></td>
+                            <td contenteditable="true"></td>
+                            <td contenteditable="true"></td>
+                            <td contenteditable="true"></td>
+                        </tr>
+                        <tr>
+                            <th>2</th>
+                            <td contenteditable="true"></td>
+                            <td contenteditable="true"></td>
+                            <td contenteditable="true"></td>
+                            <td contenteditable="true"></td>
+                            <td contenteditable="true"></td>
+                            <td contenteditable="true"></td>
+                            <td contenteditable="true"></td>
+                            <td contenteditable="true"></td>
+                        </tr>
+                        <tr>
+                            <th>3</th>
+                            <td contenteditable="true"></td>
+                            <td contenteditable="true"></td>
+                            <td contenteditable="true"></td>
+                            <td contenteditable="true"></td>
+                            <td contenteditable="true"></td>
+                            <td contenteditable="true"></td>
+                            <td contenteditable="true"></td>
+                            <td contenteditable="true"></td>
+                        </tr>
+                        <tr>
+                            <th>4</th>
+                            <td contenteditable="true"></td>
+                            <td contenteditable="true"></td>
+                            <td contenteditable="true"></td>
+                            <td contenteditable="true"></td>
+                            <td contenteditable="true"></td>
+                            <td contenteditable="true"></td>
+                            <td contenteditable="true"></td>
+                            <td contenteditable="true"></td>
+                        </tr>
+                        <tr>
+                            <th>5</th>
+                            <td contenteditable="true"></td>
+                            <td contenteditable="true"></td>
+                            <td contenteditable="true"></td>
+                            <td contenteditable="true"></td>
+                            <td contenteditable="true"></td>
+                            <td contenteditable="true"></td>
+                            <td contenteditable="true"></td>
+                            <td contenteditable="true"></td>
+                        </tr>
+                        <tr>
+                            <th>6</th>
+                            <td contenteditable="true"></td>
+                            <td contenteditable="true"></td>
+                            <td contenteditable="true"></td>
+                            <td contenteditable="true"></td>
+                            <td contenteditable="true"></td>
+                            <td contenteditable="true"></td>
+                            <td contenteditable="true"></td>
+                            <td contenteditable="true"></td>
+                        </tr>
+                        <tr>
+                            <th>7</th>
+                            <td contenteditable="true"></td>
+                            <td contenteditable="true"></td>
+                            <td contenteditable="true"></td>
+                            <td contenteditable="true"></td>
+                            <td contenteditable="true"></td>
+                            <td contenteditable="true"></td>
+                            <td contenteditable="true"></td>
+                            <td contenteditable="true"></td>
+                        </tr>
+                        <tr>
+                            <th>8</th>
+                            <td contenteditable="true"></td>
+                            <td contenteditable="true"></td>
+                            <td contenteditable="true"></td>
+                            <td contenteditable="true"></td>
+                            <td contenteditable="true"></td>
+                            <td contenteditable="true"></td>
+                            <td contenteditable="true"></td>
+                            <td contenteditable="true"></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        
+        <!-- PowerPoint Editor -->
+        <div id="powerpoint-editor" class="editor-area hidden bg-gray-200 shadow-lg rounded-lg p-6">
+            <div class="flex">
+                <!-- Slide Thumbnails -->
+                <div class="w-1/5 pr-4 overflow-y-auto" style="max-height: 600px;">
+                    <div id="slide-thumbnails" class="space-y-2">
+                        <div class="slide-thumbnail bg-white p-2 rounded shadow cursor-pointer border-2 border-blue-500" data-slide="1">
+                            <div class="bg-white h-24 flex items-center justify-center text-gray-400">
+                                <span>Slide 1</span>
+                            </div>
+                        </div>
+                        <div class="slide-thumbnail bg-white p-2 rounded shadow cursor-pointer border border-gray-300" data-slide="2">
+                            <div class="bg-white h-24 flex items-center justify-center text-gray-400">
+                                <span>Slide 2</span>
+                            </div>
+                        </div>
+                    </div>
+                    <button id="add-slide-btn" class="mt-2 w-full bg-blue-500 hover:bg-blue-600 text-white py-1 rounded">
+                        <i class="fas fa-plus mr-1"></i> Add Slide
+                    </button>
+                </div>
+                
+                <!-- Slide Preview -->
+                <div class="w-4/5">
+                    <div id="slide-container">
+                        <div class="slide bg-white">
+                            <div class="slide-content">
+                                <h1 class="text-3xl font-bold text-center mb-4">Welcome to Suo Office 2025</h1>
+                                <p class="text-center text-lg">Create beautiful presentations with our powerful tools</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="flex justify-center mt-4 space-x-4">
+                        <button id="prev-slide-btn" class="bg-gray-300 hover:bg-gray-400 px-4 py-2 rounded">
+                            <i class="fas fa-arrow-left"></i> Previous
+                        </button>
+                        <button id="next-slide-btn" class="bg-gray-300 hover:bg-gray-400 px-4 py-2 rounded">
+                            Next <i class="fas fa-arrow-right"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Status Bar -->
+    <footer class="bg-gray-800 text-white py-2 px-4">
+        <div class="container mx-auto flex justify-between items-center text-sm">
+            <div class="flex space-x-4">
+                <span id="app-status">Word Document Ready</span>
+                <span id="page-info">Page 1</span>
+                <span id="word-count">0 words</span>
+            </div>
+            <div class="flex space-x-4">
+                <span id="zoom-level">100%</span>
+                <button id="zoom-out-btn" class="hover:bg-gray-700 px-2 rounded">-</button>
+                <button id="zoom-in-btn" class="hover:bg-gray-700 px-2 rounded">+</button>
+            </div>
+        </div>
+    </footer>
+
+    <!-- File Menu Modal -->
+    <div id="file-menu-modal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex justify-center items-center">
+        <div class="bg-white rounded-lg shadow-xl w-full max-w-md">
+            <div class="flex justify-between items-center border-b px-6 py-4">
+                <h3 class="text-lg font-semibold">File</h3>
+                <button id="close-file-menu" class="text-gray-500 hover:text-gray-700">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="px-6 py-4">
+                <div class="space-y-2">
+                    <button class="w-full text-left hover:bg-gray-100 px-4 py-2 rounded flex items-center">
+                        <i class="fas fa-file mr-3 text-blue-500"></i>
+                        <span>New</span>
+                    </button>
+                    <button class="w-full text-left hover:bg-gray-100 px-4 py-2 rounded flex items-center">
+                        <i class="fas fa-folder-open mr-3 text-blue-500"></i>
+                        <span>Open</span>
+                    </button>
+                    <button id="save-file-btn" class="w-full text-left hover:bg-gray-100 px-4 py-2 rounded flex items-center">
+                        <i class="fas fa-save mr-3 text-blue-500"></i>
+                        <span>Save</span>
+                    </button>
+                    <button id="save-as-btn" class="w-full text-left hover:bg-gray-100 px-4 py-2 rounded flex items-center">
+                        <i class="fas fa-save mr-3 text-blue-500"></i>
+                        <span>Save As</span>
+                    </button>
+                    <button id="download-btn" class="w-full text-left hover:bg-gray-100 px-4 py-2 rounded flex items-center">
+                        <i class="fas fa-download mr-3 text-blue-500"></i>
+                        <span>Download</span>
+                    </button>
+                    <div class="border-t my-2"></div>
+                    <button class="w-full text-left hover:bg-gray-100 px-4 py-2 rounded flex items-center">
+                        <i class="fas fa-print mr-3 text-blue-500"></i>
+                        <span>Print</span>
+                    </button>
+                    <div class="border-t my-2"></div>
+                    <button class="w-full text-left hover:bg-gray-100 px-4 py-2 rounded flex items-center">
+                        <i class="fas fa-cog mr-3 text-blue-500"></i>
+                        <span>Settings</span>
+                    </button>
+                    <button class="w-full text-left hover:bg-gray-100 px-4 py-2 rounded flex items-center">
+                        <i class="fas fa-question-circle mr-3 text-blue-500"></i>
+                        <span>Help</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Download Options Modal -->
+    <div id="download-modal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex justify-center items-center">
+        <div class="bg-white rounded-lg shadow-xl w-full max-w-md">
+            <div class="flex justify-between items-center border-b px-6 py-4">
+                <h3 class="text-lg font-semibold">Download As</h3>
+                <button id="close-download-modal" class="text-gray-500 hover:text-gray-700">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="px-6 py-4">
+                <div class="space-y-3">
+                    <button class="download-option w-full text-left hover:bg-gray-100 px-4 py-3 rounded flex items-center border" data-type="docx">
+                        <i class="fas fa-file-word mr-3 text-blue-500 text-xl"></i>
+                        <div>
+                            <div class="font-medium">Microsoft Word (.docx)</div>
+                            <div class="text-sm text-gray-500">Compatible with Word 2007 or later</div>
+                        </div>
+                    </button>
+                    <button class="download-option w-full text-left hover:bg-gray-100 px-4 py-3 rounded flex items-center border" data-type="pdf">
+                        <i class="fas fa-file-pdf mr-3 text-red-500 text-xl"></i>
+                        <div>
+                            <div class="font-medium">PDF Document (.pdf)</div>
+                            <div class="text-sm text-gray-500">Best for sharing and printing</div>
+                        </div>
+                    </button>
+                    <button class="download-option w-full text-left hover:bg-gray-100 px-4 py-3 rounded flex items-center border" data-type="txt">
+                        <i class="fas fa-file-alt mr-3 text-gray-500 text-xl"></i>
+                        <div>
+                            <div class="font-medium">Plain Text (.txt)</div>
+                            <div class="text-sm text-gray-500">Text only, no formatting</div>
+                        </div>
+                    </button>
+                    <button class="download-option w-full text-left hover:bg-gray-100 px-4 py-3 rounded flex items-center border" data-type="html">
+                        <i class="fas fa-code mr-3 text-purple-500 text-xl"></i>
+                        <div>
+                            <div class="font-medium">Web Page (.html)</div>
+                            <div class="text-sm text-gray-500">For publishing on the web</div>
+                        </div>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // DOM Elements
+        const wordBtn = document.getElementById('word-btn');
+        const excelBtn = document.getElementById('excel-btn');
+        const powerpointBtn = document.getElementById('powerpoint-btn');
+        const wordEditor = document.getElementById('word-editor');
+        const excelEditor = document.getElementById('excel-editor');
+        const powerpointEditor = document.getElementById('powerpoint-editor');
+        const wordToolbar = document.getElementById('word-toolbar');
+        const excelToolbar = document.getElementById('excel-toolbar');
+        const powerpointToolbar = document.getElementById('powerpoint-toolbar');
+        const userBtn = document.getElementById('user-btn');
+        const userDropdown = document.getElementById('user-dropdown');
+        const saveBtn = document.getElementById('save-btn');
+        const fileMenuModal = document.getElementById('file-menu-modal');
+        const closeFileMenu = document.getElementById('close-file-menu');
+        const saveFileBtn = document.getElementById('save-file-btn');
+        const saveAsBtn = document.getElementById('save-as-btn');
+        const downloadBtn = document.getElementById('download-btn');
+        const downloadModal = document.getElementById('download-modal');
+        const closeDownloadModal = document.getElementById('close-download-modal');
+        const downloadOptions = document.querySelectorAll('.download-option');
+        const wordContent = document.getElementById('word-content');
+        const fontFamily = document.getElementById('font-family');
+        const fontSize = document.getElementById('font-size');
+        const textColorBtn = document.getElementById('text-color-btn');
+        const textColorPicker = document.getElementById('text-color-picker');
+        const highlightColorBtn = document.getElementById('highlight-color-btn');
+        const highlightColorPicker = document.getElementById('highlight-color-picker');
+        const spreadsheet = document.getElementById('spreadsheet');
+        const cellReference = document.getElementById('cell-reference');
+        const cellFormula = document.getElementById('cell-formula');
+        const excelStatus = document.getElementById('excel-status');
+        const addSlideBtn = document.getElementById('add-slide-btn');
+        const slideThumbnails = document.querySelectorAll('.slide-thumbnail');
+        const slideContainer = document.getElementById('slide-container');
+        const prevSlideBtn = document.getElementById('prev-slide-btn');
+        const nextSlideBtn = document.getElementById('next-slide-btn');
+        const docName = document.getElementById('doc-name');
+        const appStatus = document.getElementById('app-status');
+        const zoomLevel = document.getElementById('zoom-level');
+        const zoomInBtn = document.getElementById('zoom-in-btn');
+        const zoomOutBtn = document.getElementById('zoom-out-btn');
+        
+        // Current application state
+        let currentApp = 'word';
+        let currentSlide = 1;
+        let zoom = 100;
+        
+        // Initialize the application
+        function init() {
+            // Set up event listeners
+            setupEventListeners();
+            
+            // Set initial state
+            updateAppStatus();
+        }
+        
+        // Set up all event listeners
+        function setupEventListeners() {
+            // Application switcher
+            wordBtn.addEventListener('click', () => switchApp('word'));
+            excelBtn.addEventListener('click', () => switchApp('excel'));
+            powerpointBtn.addEventListener('click', () => switchApp('powerpoint'));
+            
+            // User dropdown
+            userBtn.addEventListener('click', toggleUserDropdown);
+            
+            // File operations
+            saveBtn.addEventListener('click', () => fileMenuModal.classList.remove('hidden'));
+            closeFileMenu.addEventListener('click', () => fileMenuModal.classList.add('hidden'));
+            saveFileBtn.addEventListener('click', saveFile);
+            saveAsBtn.addEventListener('click', saveFileAs);
+            downloadBtn.addEventListener('click', () => {
+                fileMenuModal.classList.add('hidden');
+                downloadModal.classList.remove('hidden');
+            });
+            closeDownloadModal.addEventListener('click', () => downloadModal.classList.add('hidden'));
+            
+            // Download options
+            downloadOptions.forEach(option => {
+                option.addEventListener('click', () => {
+                    const type = option.getAttribute('data-type');
+                    downloadFile(type);
+                    downloadModal.classList.add('hidden');
+                });
+            });
+            
+            // Word editor formatting
+            fontFamily.addEventListener('change', () => {
+                document.execCommand('fontName', false, fontFamily.value);
+            });
+            
+            fontSize.addEventListener('change', () => {
+                document.execCommand('fontSize', false, fontSize.value);
+            });
+            
+            // Text color picker
+            textColorBtn.addEventListener('click', () => {
+                textColorPicker.classList.toggle('hidden');
+                highlightColorPicker.classList.add('hidden');
+            });
+            
+            document.querySelectorAll('#text-color-picker div').forEach(color => {
+                color.addEventListener('click', () => {
+                    document.execCommand('foreColor', false, color.getAttribute('data-color'));
+                    textColorPicker.classList.add('hidden');
+                });
+            });
+            
+            // Highlight color picker
+            highlightColorBtn.addEventListener('click', () => {
+                highlightColorPicker.classList.toggle('hidden');
+                textColorPicker.classList.add('hidden');
+            });
+            
+            document.querySelectorAll('#highlight-color-picker div').forEach(color => {
+                color.addEventListener('click', () => {
+                    document.execCommand('hiliteColor', false, color.getAttribute('data-color'));
+                    highlightColorPicker.classList.add('hidden');
+                });
+            });
+            
+            // Toolbar buttons for formatting
+            document.querySelectorAll('[data-command]').forEach(button => {
+                button.addEventListener('click', () => {
+                    const command = button.getAttribute('data-command');
+                    document.execCommand(command, false, null);
+                });
+            });
+            
+            // Excel spreadsheet interactions
+            spreadsheet.addEventListener('click', handleCellClick);
+            spreadsheet.addEventListener('input', handleCellInput);
+            
+            // PowerPoint interactions
+            addSlideBtn.addEventListener('click', addSlide);
+            slideThumbnails.forEach(thumb => {
+                thumb.addEventListener('click', () => {
+                    const slideNum = parseInt(thumb.getAttribute('data-slide'));
+                    showSlide(slideNum);
+                });
+            });
+            
+            prevSlideBtn.addEventListener('click', () => {
+                if (currentSlide > 1) {
+                    showSlide(currentSlide - 1);
+                }
+            });
+            
+            nextSlideBtn.addEventListener('click', () => {
+                showSlide(currentSlide + 1);
+            });
+            
+            // Document name
+            docName.addEventListener('change', updateAppStatus);
+            
+            // Zoom controls
+            zoomInBtn.addEventListener('click', zoomIn);
+            zoomOutBtn.addEventListener('click', zoomOut);
+            
+            // Close dropdowns when clicking outside
+            document.addEventListener('click', (e) => {
+                if (!userBtn.contains(e.target) && !userDropdown.contains(e.target)) {
+                    userDropdown.classList.add('hidden');
+                }
+                
+                if (!textColorBtn.contains(e.target) && !textColorPicker.contains(e.target)) {
+                    textColorPicker.classList.add('hidden');
+                }
+                
+                if (!highlightColorBtn.contains(e.target) && !highlightColorPicker.contains(e.target)) {
+                    highlightColorPicker.classList.add('hidden');
+                }
+            });
+        }
+        
+        // Switch between applications
+        function switchApp(app) {
+            currentApp = app;
+            
+            // Hide all editors and toolbars
+            wordEditor.classList.add('hidden');
+            excelEditor.classList.add('hidden');
+            powerpointEditor.classList.add('hidden');
+            wordToolbar.classList.add('hidden');
+            excelToolbar.classList.add('hidden');
+            powerpointToolbar.classList.add('hidden');
+            
+            // Reset button styles
+            wordBtn.classList.remove('bg-blue-100');
+            excelBtn.classList.remove('bg-green-100');
+            powerpointBtn.classList.remove('bg-red-100');
+            
+            // Show selected editor and toolbar
+            if (app === 'word') {
+                wordEditor.classList.remove('hidden');
+                wordToolbar.classList.remove('hidden');
+                wordBtn.classList.add('bg-blue-100');
+            } else if (app === 'excel') {
+                excelEditor.classList.remove('hidden');
+                excelToolbar.classList.remove('hidden');
+                excelBtn.classList.add('bg-green-100');
+            } else if (app === 'powerpoint') {
+                powerpointEditor.classList.remove('hidden');
+                powerpointToolbar.classList.remove('hidden');
+                powerpointBtn.classList.add('bg-red-100');
+            }
+            
+            updateAppStatus();
+        }
+        
+        // Toggle user dropdown
+        function toggleUserDropdown() {
+            userDropdown.classList.toggle('hidden');
+        }
+        
+        // Save file
+        function saveFile() {
+            fileMenuModal.classList.add('hidden');
+            alert(`Document "${docName.value}" saved successfully!`);
+            // In a real app, this would save to server/local storage
+        }
+        
+        // Save file as
+        function saveFileAs() {
+            fileMenuModal.classList.add('hidden');
+            const newName = prompt('Enter new document name:', docName.value);
+            if (newName) {
+                docName.value = newName;
+                saveFile();
+            }
+        }
+        
+        // Download file
+        function downloadFile(type) {
+            let content, mimeType, ext;
+            
+            if (currentApp === 'word') {
+                content = wordContent.innerHTML;
+                if (type === 'docx') {
+                    mimeType = 'application/vnd.openxmlformats-officedocument.wordprocessingml.document';
+                    ext = 'docx';
+                } else if (type === 'pdf') {
+                    mimeType = 'application/pdf';
+                    ext = 'pdf';
+                } else if (type === 'txt') {
+                    content = wordContent.innerText;
+                    mimeType = 'text/plain';
+                    ext = 'txt';
+                } else if (type === 'html') {
+                    mimeType = 'text/html';
+                    ext = 'html';
+                }
+            } else if (currentApp === 'excel') {
+                // In a real app, this would generate proper Excel file
+                content = 'Excel data would be here';
+                if (type === 'xlsx') {
+                    mimeType = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
+                    ext = 'xlsx';
+                } else if (type === 'csv') {
+                    mimeType = 'text/csv';
+                    ext = 'csv';
+                }
+            } else if (currentApp === 'powerpoint') {
+                // In a real app, this would generate proper PPT file
+                content = 'PowerPoint data would be here';
+                if (type === 'pptx') {
+                    mimeType = 'application/vnd.openxmlformats-officedocument.presentationml.presentation';
+                    ext = 'pptx';
+                }
+            }
+            
+            // Create download link
+            const blob = new Blob([content], { type: mimeType });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `${docName.value}.${ext}`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            
+            alert(`Downloading "${docName.value}.${ext}"...`);
+        }
+        
+        // Handle Excel cell click
+        function handleCellClick(e) {
+            if (e.target.tagName === 'TD' || e.target.tagName === 'TH') {
+                // Remove active class from all cells
+                document.querySelectorAll('#spreadsheet td, #spreadsheet th').forEach(cell => {
+                    cell.classList.remove('active-cell');
+                });
+                
+                // Add active class to clicked cell
+                e.target.classList.add('active-cell');
+                
+                // Update cell reference
+                if (e.target.tagName === 'TD') {
+                    const row = e.target.parentElement.rowIndex;
+                    const col = e.target.cellIndex;
+                    const colName = String.fromCharCode(64 + col);
+                    cellReference.value = `${colName}${row}`;
+                }
+            }
+        }
+        
+        // Handle Excel cell input
+        function handleCellInput(e) {
+            if (e.target.tagName === 'TD') {
+                excelStatus.textContent = 'Edited';
+                // In a real app, we would recalculate formulas here
+            }
+        }
+        
+        // Add new slide in PowerPoint
+        function addSlide() {
+            const slideNum = document.querySelectorAll('.slide-thumbnail').length + 1;
+            
+            // Create new thumbnail
+            const newThumb = document.createElement('div');
+            newThumb.className = 'slide-thumbnail bg-white p-2 rounded shadow cursor-pointer border border-gray-300';
+            newThumb.setAttribute('data-slide', slideNum);
+            newThumb.innerHTML = `
+                <div class="bg-white h-24 flex items-center justify-center text-gray-400">
+                    <span>Slide ${slideNum}</span>
+                </div>
+            `;
+            newThumb.addEventListener('click', () => showSlide(slideNum));
+            
+            // Add to thumbnails container
+            document.getElementById('slide-thumbnails').appendChild(newThumb);
+            
+            // Show the new slide
+            showSlide(slideNum);
+        }
+        
+        // Show specific slide in PowerPoint
+        function showSlide(num) {
+            const slides = document.querySelectorAll('.slide-thumbnail');
+            if (num < 1 || num > slides.length) return;
+            
+            currentSlide = num;
+            
+            // Update thumbnails
+            slides.forEach((slide, index) => {
+                if (index + 1 === num) {
+                    slide.classList.remove('border-gray-300');
+                    slide.classList.add('border-blue-500', 'border-2');
+                } else {
+                    slide.classList.remove('border-blue-500', 'border-2');
+                    slide.classList.add('border-gray-300');
+                }
+            });
+            
+            // Update slide content (in a real app, this would show actual slide content)
+            slideContainer.innerHTML = `
+                <div class="slide bg-white">
+                    <div class="slide-content">
+                        <h1 class="text-3xl font-bold text-center mb-4">Slide ${num}</h1>
+                        <p class="text-center text-lg">This is slide content for slide ${num}</p>
+                    </div>
+                </div>
+            `;
+            
+            // Update navigation buttons
+            prevSlideBtn.disabled = num === 1;
+            nextSlideBtn.disabled = num === slides.length;
+        }
+        
+        // Update application status bar
+        function updateAppStatus() {
+            if (currentApp === 'word') {
+                appStatus.textContent = `Word Document: ${docName.value}`;
+            } else if (currentApp === 'excel') {
+                appStatus.textContent = `Excel Workbook: ${docName.value}`;
+            } else if (currentApp === 'powerpoint') {
+                appStatus.textContent = `PowerPoint Presentation: ${docName.value}`;
+            }
+        }
+        
+        // Zoom in
+        function zoomIn() {
+            if (zoom < 200) {
+                zoom += 10;
+                updateZoom();
+            }
+        }
+        
+        // Zoom out
+        function zoomOut() {
+            if (zoom > 50) {
+                zoom -= 10;
+                updateZoom();
+            }
+        }
+        
+        // Update zoom level
+        function updateZoom() {
+            zoomLevel.textContent = `${zoom}%`;
+            
+            // In a real app, we would actually zoom the content
+            if (currentApp === 'word') {
+                wordContent.style.transform = `scale(${zoom/100})`;
+                wordContent.style.transformOrigin = '0 0';
+            } else if (currentApp === 'excel') {
+                spreadsheet.style.transform = `scale(${zoom/100})`;
+                spreadsheet.style.transformOrigin = '0 0';
+            } else if (currentApp === 'powerpoint') {
+                slideContainer.style.transform = `scale(${zoom/100})`;
+                slideContainer.style.transformOrigin = 'center';
+            }
+        }
+        
+        // Initialize the app
+        init();
+    </script>
+</body>
+</html>
